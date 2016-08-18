@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package PuppetRubyHost.Protocols;
+
+// Represents a Puppet value.
+message Value {
+  // Represents a symbolic value that has no data.
+  enum Symbol {
+    // Represents a Puppet undef.
+    UNDEF = 0;
+    // Represents a Puppet default.
+    DEFAULT = 1;
+  }
+
+  // Represents a Puppet array.
+  // Note: fields of a `oneof` cannot be repeated, thus the use of this message.
+  message Array {
+    // The elements of the array.
+    repeated Value elements = 1;
+  }
+
+  // Represents a Puppet hash.
+  // Note: cannot use a protobuf map in a oneof, thus the use of this message.
+  message Hash {
+    // Represents a key value pair.
+    message KeyValuePair {
+      // The hash key.
+      Value key = 1;
+      // The hash value.
+      Value value = 2;
+    }
+
+    // The elements of the hash.
+    repeated KeyValuePair elements = 1;
+  }
+
+  // Represents the kind of value.
+  oneof kind {
+    // A symbolic value (undef, default, etc.).
+    Symbol symbol = 1;
+    // An integral value.
+    int64 integer = 2;
+    // A floating point value.
+    double float = 3;
+    // A boolean value.
+    bool boolean = 4;
+    // A string value.
+    string string = 5;
+    // A regex value.
+    string regexp = 6;
+    // A Puppet type value (TODO: revisit string representation)
+    string type = 7;
+    // A Puppet array value.
+    Array array = 8;
+    // A Puppet hash value.
+    Hash hash = 9;
+  }
+}

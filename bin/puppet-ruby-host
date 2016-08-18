@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+require 'puppet-ruby-host/options'
+require 'puppet-ruby-host/server'
+
+begin
+  options = PuppetRubyHost::Options.new(ARGV)
+  options.validate!
+rescue OptionParser::ParseError => ex
+  puts "Error: #{ex.message}"
+  PuppetRubyHost::Options.help
+  exit 1
+end
+
+puts "Listening on #{options[:listen]}."
+PuppetRubyHost::Server.new(options).run

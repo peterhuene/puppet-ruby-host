@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+import "value.proto";
+import "exception.proto";
+
+package PuppetRubyHost.Protocols;
+
+// The Puppet function service.
+service Function {
+  // Describes a Puppet function.
+  rpc Describe(DescribeFunctionRequest) returns (DescribeFunctionResponse);
+
+  // Invokes a Puppet function.
+  rpc Invoke(stream InvokeFunctionRequest) returns (stream InvokeFunctionResponse);
+}
+
+// The request for describing a Puppet function.
+message DescribeFunctionRequest {
+  // The name of the Puppet environment containing the function (e.g. 'production').
+  string environment = 1;
+  // The name of the Puppet function to describe (e.g. 'foo::bar').
+  string name = 2;
+}
+
+// The response for describing a Puppet function.
+message DescribeFunctionResponse {
+  // Represents the description of a Puppet function.
+  message Function {
+    // Represents the description of a Puppet function dispatch.
+    message Dispatch {
+      // The id of the dispatch (used to invoke).
+      string id = 1;
+      // The name of the dispatch.
+      string name = 2;
+      // The array of parameter types (if empty, denotes all types are 'Any') .
+      repeated string types = 3;
+      // The array of parameters names.
+      repeated string names = 4;
+      // The minimum number of arguments required.
+      int64 min = 5;
+      // The maximum number of arguments allowed (-1 denotes unbounded).
+      int64 max = 6;
+      // The type of the block or empty if no block.
+      string block_type = 7;
+      // The name of the block parameter or empty if no block.
+      string block_name = 8;
+    }
+
+    // The name of the Puppet function (e.g. foo::bar).
+    string name = 1;
+    // The path to the file defining the Puppet function (e.g. foo/lib/puppet/functions/foo/bar.rb).
+    string file = 2;
+    // The line in the file where the Puppet function was defined.
+    int64 line = 3;
+    // The dispatches for the function.
+    repeated Dispatch dispatches = 4;
+  }
+
+  // Represents the kind of response.
+  // Note: if the response is empty, the function was not found.
+  oneof kind {
+    // The function description if the function was found.
+    Function function = 1;
+    // The exception that occurred or null if no exception.
+    Exception exception = 2;
+  }
+}
+
+// The request for invoking a Puppet function.
+message InvokeFunctionRequest {
+  // Represents the request for calling a function.
+  message Call {
+    // The name of the Puppet environment containing the function (e.g. 'production').
+    string environment = 1;
+    // The id of the function dispatch to invoke.
+    string id = 2;
+    // The arguments to the function.
+    repeated Value arguments = 3;
+    // Whether or not the caller is passing a block.
+    bool has_block = 4;
+  }
+
+  // Represents a continuation of a previous yield
+  message Continuation {
+    oneof kind {
+      Value result = 1;
+      Exception exception = 2;
+    }
+  }
+
+  // Represents the kind of request.
+  oneof kind {
+    // The request is calling a function.
+    Call call = 1;
+    // The request is a continuation from a previous yield.
+    Continuation continuation = 2;
+  }
+}
+
+// The response from invoking a Puppet function.
+message InvokeFunctionResponse {
+  // Represents a yield from the function to the block.
+  message Yield {
+    // The arguments to the block.
+    repeated Value arguments = 1;
+  }
+
+  // Represents the kind of response.
+  oneof kind {
+    // The return value from the function invocation.
+    Value result = 1;
+    // The response is a yield to the function's block.
+    Yield yield = 2;
+    // The response is an exception during function invocation.
+    Exception exception = 3;
+  }
+}

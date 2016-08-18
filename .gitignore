@@ -1,0 +1,12 @@
+.ruby-version
+.bundle/
+.idea/
+.vscode/
+.ruby-version
+.ruby-gemset
+.DS_Store
+
+Gemfile.lock
+Gemfile.local
+
+puppet-ruby-host-*.gem

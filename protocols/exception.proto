@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package PuppetRubyHost.Protocols;
+
+// Represents information about a server-side exception.
+message Exception {
+  // Information about source context
+  message SourceContext {
+    // Represents a position in a source file.
+    message Position {
+      // The line in a source file.
+      int64 line = 1;
+      // The offset in the file.
+      int64 offset = 2;
+    }
+
+    // The source file path.
+    string file = 1;
+    // The beginning position of the context.
+    Position begin = 2;
+    // The ending position of the context.
+    Position end = 3;
+  }
+
+  // Represents a stack frame.
+  message StackFrame {
+    // The name of the function.
+    string name = 1;
+    // The source file containing the function.
+    string file = 2;
+    // The line in the function.
+    int64 line = 3;
+  }
+
+  // The exception message.
+  string message = 1;
+  // The source context.
+  SourceContext context = 2;
+  // The exception frames (may contain only part of a full backtrace).
+  repeated StackFrame backtrace = 3;
+}

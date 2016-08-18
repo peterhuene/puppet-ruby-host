@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+import "exception.proto";
+
+package PuppetRubyHost.Protocols;
+
+// The Puppet resource type service.
+service Type {
+  // Describes a Puppet resource type.
+  rpc Describe(DescribeTypeRequest) returns (DescribeTypeResponse);
+}
+
+// The request for describing a Puppet resource type.
+message DescribeTypeRequest {
+  // The name of the Puppet environment containing the type (e.g. 'production').
+  string environment = 1;
+  // The name of the Puppet resource type to describe (e.g. 'Foo::Bar').
+  string name = 2;
+}
+
+// The response for describing a Puppet resource type.
+message DescribeTypeResponse {
+  // Represents the description of a Puppet resource type.
+  message Type {
+    // Represents a resource type parameter.
+    message Parameter {
+      // The name of the parameter.
+      string name = 1;
+      // The acceptable values for the parameter.
+      repeated string values = 2;
+      // The acceptable regexes for the parameter.
+      repeated string regexes = 3;
+      // True if the parameter is a namevar or false if not.
+      bool namevar = 4;
+    }
+
+    // The name of the Puppet resource type (e.g. 'Foo::Bar').
+    string name = 1;
+    // The path to the file defining the Puppet resource type (e.g. foo/lib/puppet/type/foo/bar.rb).
+    string file = 2;
+    // The line in the file where the Puppet resource type is defined.
+    int64 line = 3;
+    // The type's properties.
+    repeated Parameter properties = 4;
+    // The type's parameters.
+    repeated Parameter parameters = 5;
+  }
+
+  // Represents the kind of response.
+  // Note: if the response is empty, the type was not found.
+  oneof kind {
+    // The Puppet resource type description if the type was found.
+    Type type = 1;
+    // The exception that occurred or null if no exception.
+    Exception exception = 2;
+  }
+}
